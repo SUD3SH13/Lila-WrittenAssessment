@@ -11,9 +11,9 @@ import {
     Tooltip,
 } from "@mantine/core";
 
-import ambroseValleyMap from "../assets/minimaps/AmbroseValley_minimap.png";
-import grandRiftMap from "../assets/minimaps/GrandRift_minimap.png";
-import lockdownMap from "../assets/minimaps/Lockdown_minimap.jpg";
+import ambroseValleyMap from "../assets/minimaps/AmbroseValley_Minimap.png";
+import grandRiftMap from "../assets/minimaps/GrandRift_Minimap.png";
+import lockdownMap from "../assets/minimaps/Lockdown_Minimap.jpg";
 
 
 // ==========================================================
