@@ -1,4 +1,10 @@
-import { Tabs, Image, Text, Group } from "@mantine/core";
+import {
+  Tabs,
+  Image,
+  Text,
+  Group,
+  ScrollArea,
+} from "@mantine/core";
 
 import ambroseValleyMap from "../assets/minimaps/AmbroseValley_Minimap.webp";
 import grandRiftMap from "../assets/minimaps/GrandRift_Minimap.webp";
@@ -32,42 +38,76 @@ function MapSelector({ selectedMap, onMapChange }) {
       onChange={onMapChange}
       variant="pills"
     >
-      <Group>
-        <Text>
+
+      <Group
+        wrap="nowrap"
+        gap="sm"
+        align="center"
+        w="100%"
+      >
+
+        <Text
+          style={{
+            flexShrink: 0,
+          }}
+        >
           Maps
         </Text>
-        <Text size="30px">
+
+        <Text
+          size="30px"
+          style={{
+            flexShrink: 0,
+          }}
+        >
           |
         </Text>
-        <Tabs.List>
 
-          {maps.map((map) => (
+        <ScrollArea
+          type="auto"
+          scrollbars="x"
+          scrollbarSize={6}
+          style={{
+            flex: 1,
+          }}
+        >
 
-            <Tabs.Tab
-              key={map.value}
-              value={map.value}
-              nowrap
-              leftSection={
-                <Image
-                  src={map.image}
-                  alt=""
-                  w={24}
-                  h={24}
-                  fit="cover"
-                  radius="sm"
-                />
-              }
-            >
-              {map.label}
-            </Tabs.Tab>
+          <Tabs.List
+            wrap="nowrap"
+            style={{
+              width: "max-content",
+            }}
+          >
 
-          ))}
+            {maps.map((map) => (
 
-        </Tabs.List>
+              <Tabs.Tab
+                key={map.value}
+                value={map.value}
+                leftSection={
+                  <Image
+                    src={map.image}
+                    alt=""
+                    w={24}
+                    h={24}
+                    fit="cover"
+                    radius="sm"
+                  />
+                }
+                style={{
+                  flexShrink: 0,
+                }}
+              >
+                {map.label}
+              </Tabs.Tab>
+
+            ))}
+
+          </Tabs.List>
+
+        </ScrollArea>
 
       </Group>
-
-
 
     </Tabs>
   );
