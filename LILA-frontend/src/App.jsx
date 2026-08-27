@@ -247,7 +247,7 @@ function App() {
 
     <AppShell padding="md">
 
-      <Container fluid>
+      <Container fluid p="sm">
 
         <Paper
           p="lg"
