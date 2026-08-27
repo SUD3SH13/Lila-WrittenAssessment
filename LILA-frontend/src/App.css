@@ -1,0 +1,33 @@
+.app {
+  min-height: 100vh;
+  padding: 40px;
+  background: #111;
+  color: white;
+}
+
+.app h1 {
+  margin-bottom: 10px;
+}
+
+.match-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.match-card {
+  padding: 20px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #1b1b1b;
+}
+
+.match-card h2 {
+  margin-top: 0;
+}
+
+.match-card p {
+  color: #aaa;
+  font-size: 14px;
+}
