@@ -1,3 +1,4 @@
+
 import { useRef } from "react";
 
 import {
@@ -9,6 +10,9 @@ import {
 } from "@mantine/core";
 
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
 
 
 function DatePicker({
@@ -35,14 +39,12 @@ function DatePicker({
       return;
     }
 
-
     isDragging.current = true;
 
     startX.current = event.clientX;
 
     startScrollLeft.current =
       viewport.scrollLeft;
-
 
     viewport.style.cursor = "grabbing";
     viewport.style.userSelect = "none";
@@ -60,17 +62,14 @@ function DatePicker({
       return;
     }
 
-
     const viewport = viewportRef.current;
 
     if (!viewport) {
       return;
     }
 
-
     const distance =
       event.clientX - startX.current;
-
 
     viewport.scrollLeft =
       startScrollLeft.current - distance;
@@ -87,7 +86,6 @@ function DatePicker({
     const viewport = viewportRef.current;
 
     isDragging.current = false;
-
 
     if (viewport) {
 
@@ -127,21 +125,22 @@ function DatePicker({
         {dates.map((date) => {
 
           /*
-           * Your data uses:
+           * Data format:
            *
            * February_10
            * February_11
+           * February_12
            *
-           * Convert that into a real date
-           * for displaying the calendar UI.
+           * Convert it explicitly into a Day.js date.
+           *
+           * This avoids browser-dependent date parsing.
            */
 
-          const formattedDate =
-            date.replace("_", "-");
-
-
-          const day =
-            dayjs(`2026-${formattedDate}`);
+          const day = dayjs(
+            `${date}_2026`,
+            "MMMM_DD_YYYY",
+            true
+          );
 
 
           const isSelected =
