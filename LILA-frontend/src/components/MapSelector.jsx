@@ -24,7 +24,7 @@ const maps = [
   },
   {
     value: "Lockdown",
-    label: "LockDown",
+    label: "Lockdown",
     image: lockdownMap,
   },
 ];

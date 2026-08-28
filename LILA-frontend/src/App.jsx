@@ -13,41 +13,90 @@ import {
 } from "@mantine/core";
 
 import MapSelector from "./components/MapSelector";
+import ToolSelector from "./components/ToolSelector";
+
 import DatePicker from "./components/DatePicker";
 import MatchSelector from "./components/MatchSelector";
+
 import MapViewer from "./components/MapViewer";
+import HeatmapViewer from "./components/HeatmapViewer";
+
 import Timeline from "./components/Timeline";
 
+
+// ==========================================================
+// APP
+// ==========================================================
 
 function App() {
 
   // ==========================================================
-  // DATA
+  // MATCH DATA
   // ==========================================================
 
   const [data, setData] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
 
+  // ==========================================================
+  // HEATMAP DATA
+  // ==========================================================
+
+  const [heatmapData, setHeatmapData] = useState(null);
+
+  const [heatmapLoading, setHeatmapLoading] = useState(true);
 
 
   // ==========================================================
-  // UI STATE
+  // MAP STATE
   // ==========================================================
 
-  const [selectedMap, setSelectedMap] = useState("AmbroseValley");
-
-  const [selectedDate, setSelectedDate] = useState(null);
-
-  const [selectedMatch, setSelectedMatch] = useState(null);
-
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [selectedMap, setSelectedMap] =
+    useState("AmbroseValley");
 
 
   // ==========================================================
-  // LOAD JSON
+  // TOOL STATE
+  //
+  // "replay"  -> Match Replay
+  // "heatmap" -> Heatmaps
+  // ==========================================================
+
+  const [selectedTool, setSelectedTool] =
+    useState("replay");
+
+
+  // ==========================================================
+  // REPLAY STATE
+  // ==========================================================
+
+  const [selectedDate, setSelectedDate] =
+    useState(null);
+
+  const [selectedMatch, setSelectedMatch] =
+    useState(null);
+
+  const [currentTime, setCurrentTime] =
+    useState(0);
+
+  const [isPlaying, setIsPlaying] =
+    useState(false);
+
+  const [playbackSpeed, setPlaybackSpeed] =
+    useState(1);
+
+
+  // ==========================================================
+  // HEATMAP STATE
+  // ==========================================================
+
+  const [selectedHeatmap, setSelectedHeatmap] =
+    useState("traffic");
+
+
+  // ==========================================================
+  // LOAD MATCH JSON
   // ==========================================================
 
   useEffect(() => {
@@ -68,9 +117,13 @@ function App() {
 
       .then((json) => {
 
-        console.log("Match data loaded:", json);
+        console.log(
+          "Match data loaded:",
+          json
+        );
 
         setData(json);
+
         setLoading(false);
 
       })
@@ -90,7 +143,56 @@ function App() {
 
 
   // ==========================================================
-  // GET AVAILABLE DATES FOR SELECTED MAP
+  // LOAD HEATMAP JSON
+  // ==========================================================
+
+  useEffect(() => {
+
+    fetch("/data/heatmaps.json")
+
+      .then((response) => {
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to load heatmaps.json"
+          );
+        }
+
+        return response.json();
+
+      })
+
+      .then((json) => {
+
+        console.log(
+          "Heatmap data loaded:",
+          json
+        );
+
+        setHeatmapData(json);
+
+        setHeatmapLoading(false);
+
+      })
+
+      .catch((error) => {
+
+        console.error(
+          "Error loading heatmap data:",
+          error
+        );
+
+        setHeatmapLoading(false);
+
+      });
+
+  }, []);
+
+
+  // ==========================================================
+  // GET AVAILABLE DATES
+  //
+  // Only needed for Match Replay.
   // ==========================================================
 
   const dates = useMemo(() => {
@@ -99,16 +201,27 @@ function App() {
       return [];
     }
 
-    const mapData =
-      data.maps[selectedMap];
 
-    if (!mapData || !mapData.dates) {
+    const mapData =
+      data.maps?.[selectedMap];
+
+
+    if (
+      !mapData ||
+      !mapData.dates
+    ) {
       return [];
     }
 
-    return Object.keys(mapData.dates);
 
-  }, [data, selectedMap]);
+    return Object.keys(
+      mapData.dates
+    );
+
+  }, [
+    data,
+    selectedMap,
+  ]);
 
 
   // ==========================================================
@@ -124,89 +237,154 @@ function App() {
       return;
     }
 
-    // If current date doesn't exist
-    // for this map, select first date.
 
-    if (!dates.includes(selectedDate)) {
+    /*
+     * If the currently selected date
+     * doesn't exist on the new map,
+     * use the first available date.
+     */
 
-      setSelectedDate(dates[0]);
+    if (
+      !dates.includes(selectedDate)
+    ) {
+
+      setSelectedDate(
+        dates[0]
+      );
 
     }
 
-  }, [dates, selectedDate]);
+  }, [
+    dates,
+    selectedDate,
+  ]);
 
 
   // ==========================================================
-  // GET MATCH IDS FOR SELECTED MAP + DATE
+  // GET MATCH IDS
+  //
+  // Selected map + selected date
   // ==========================================================
 
   const matchIds = useMemo(() => {
 
-    if (!data || !selectedDate) {
+    if (
+      !data ||
+      !selectedDate
+    ) {
       return [];
     }
+
 
     const mapData =
-      data.maps[selectedMap];
+      data.maps?.[selectedMap];
 
-    if (!mapData || !mapData.dates) {
+
+    if (
+      !mapData ||
+      !mapData.dates
+    ) {
       return [];
     }
+
 
     const dateData =
-      mapData.dates[selectedDate];
+      mapData.dates?.[selectedDate];
 
-    if (!dateData || !dateData.matches) {
+
+    if (
+      !dateData ||
+      !Array.isArray(dateData.matches)
+    ) {
       return [];
     }
+
 
     return dateData.matches;
 
-  }, [data, selectedMap, selectedDate]);
+  }, [
+    data,
+    selectedMap,
+    selectedDate,
+  ]);
 
 
   // ==========================================================
-  // CONVERT MATCH IDS INTO MATCH OBJECTS
+  // CONVERT MATCH IDS TO MATCH OBJECTS
   // ==========================================================
 
   const filteredMatches = useMemo(() => {
 
-    if (!data) {
+    if (
+      !data ||
+      !data.matches
+    ) {
       return [];
     }
 
+
     return matchIds
+
       .map((matchId) => {
 
         return data.matches[matchId];
 
       })
+
       .filter(Boolean);
 
-  }, [data, matchIds]);
+  }, [
+    data,
+    matchIds,
+  ]);
 
 
   // ==========================================================
   // AUTOMATICALLY SELECT FIRST MATCH
+  //
+  // When:
+  // - Map changes
+  // - Date changes
+  //
+  // select the first match automatically.
   // ==========================================================
 
   useEffect(() => {
 
-    if (filteredMatches.length === 0) {
+    if (
+      filteredMatches.length === 0
+    ) {
 
       setSelectedMatch(null);
 
       return;
     }
 
-    // Automatically select first match
-    // whenever the date changes.
 
-    setSelectedMatch(
-      filteredMatches[0].id
-    );
+    /*
+     * Don't unnecessarily reset the
+     * match if it is still available.
+     */
 
-  }, [filteredMatches]);
+    const matchStillExists =
+      filteredMatches.some(
+        (match) =>
+          match.id === selectedMatch
+      );
+
+
+    if (!matchStillExists) {
+
+      setSelectedMatch(
+        filteredMatches[0].id
+      );
+
+    }
+
+  }, [
+    filteredMatches,
+    selectedMatch,
+  ]);
 
 
   // ==========================================================
@@ -215,24 +393,123 @@ function App() {
 
   const selectedMatchData = useMemo(() => {
 
-    if (!data || !selectedMatch) {
+    if (
+      !data ||
+      !selectedMatch
+    ) {
       return null;
     }
 
-    return data.matches[selectedMatch] || null;
 
-  }, [data, selectedMatch]);
+    return (
+      data.matches?.[selectedMatch] ||
+      null
+    );
+
+  }, [
+    data,
+    selectedMatch,
+  ]);
+
+
+  // ==========================================================
+  // GET HEATMAP DATA FOR SELECTED MAP
+  //
+  // Example:
+  //
+  // heatmaps.json
+  //
+  // {
+  //   "AmbroseValley": {
+  //      "grid_size": 64,
+  //      "traffic": [...]
+  //   }
+  // }
+  // ==========================================================
+
+  const selectedMapHeatmap = useMemo(() => {
+
+    if (
+      !heatmapData ||
+      !selectedMap
+    ) {
+      return null;
+    }
+
+
+    return (
+      heatmapData[selectedMap] ||
+      null
+    );
+
+  }, [
+    heatmapData,
+    selectedMap,
+  ]);
+
+
+  // ==========================================================
+  // RESET REPLAY WHEN MAP CHANGES
+  // ==========================================================
+
+  useEffect(() => {
+
+    setCurrentTime(0);
+
+    setIsPlaying(false);
+
+  }, [
+    selectedMap,
+  ]);
+
+
+  // ==========================================================
+  // STOP REPLAY WHEN SWITCHING TO HEATMAP
+  // ==========================================================
+
+  useEffect(() => {
+
+    if (
+      selectedTool === "heatmap"
+    ) {
+
+      setIsPlaying(false);
+
+    }
+
+  }, [
+    selectedTool,
+  ]);
 
 
   // ==========================================================
   // LOADING
   // ==========================================================
 
-  if (loading) {
+  if (
+    loading ||
+    heatmapLoading
+  ) {
 
     return (
       <Center h="100vh">
-        <Loader />
+
+        <Stack
+          align="center"
+          gap="sm"
+        >
+
+          <Loader />
+
+          <Text
+            size="sm"
+            c="dimmed"
+          >
+            Loading data...
+          </Text>
+
+        </Stack>
+
       </Center>
     );
 
@@ -247,7 +524,10 @@ function App() {
 
     <AppShell padding="md">
 
-      <Container fluid p="sm">
+      <Container
+        fluid
+        p="sm"
+      >
 
         <Paper
           p="lg"
@@ -258,124 +538,243 @@ function App() {
           <Stack gap="lg">
 
 
-            {/* =================================================
-                MAP TABS
-            ================================================= */}
+            {/* ==================================================
+                MAP SELECTOR
+            ================================================== */}
 
             <MapSelector
-              selectedMap={selectedMap}
-              onMapChange={setSelectedMap}
+              selectedMap={
+                selectedMap
+              }
+
+              onMapChange={
+                setSelectedMap
+              }
             />
 
 
             <Divider />
 
 
-            {/* =================================================
-                MAIN CONTENT
-            ================================================= */}
+            {/* ==================================================
+                TOOL SELECTOR
+            ==================================================
+            
+            Tabs:
 
-            <Grid gutter="lg">
+            Match Replay
+            Heatmaps
+
+            ================================================== */}
+            <Container align="center" p={0}>
+                          <ToolSelector
+              selectedTool={
+                selectedTool
+              }
+
+              onToolChange={
+                setSelectedTool
+              }
+            />
+
+            </Container>
 
 
-              {/* =================================================
-                  LEFT SIDE
-              ================================================= */}
 
-              <Grid.Col
-                span={{
-                  base: 12,
-                  md: 3,
-                }}
+            
+
+
+            {/* ==================================================
+                MATCH REPLAY
+            ================================================== */}
+
+            {selectedTool === "replay" && (
+
+              <Grid
+                gutter="lg"
               >
 
-                <Stack gap="md">
+
+                {/* =================================================
+                    LEFT SIDE
+                ================================================= */}
+
+                <Grid.Col
+                  span={{
+                    base: 12,
+                    md: 3,
+                  }}
+                >
+
+                  <Stack gap="md">
 
 
-                  {/* =================================================
-                      DATE PICKER
-                  ================================================= */}
+                    {/* =============================================
+                        DATE PICKER
+                    ============================================= */}
 
-                  <Text
-                    size="sm"
-                    fw={600}
-                  >
-                    Dates
-                  </Text>
-
-                  <DatePicker
-                    dates={dates}
-                    selectedDate={selectedDate}
-                    onDateChange={setSelectedDate}
-                  />
+                    <Text
+                      size="sm"
+                      fw={600}
+                    >
+                      Dates
+                    </Text>
 
 
-                  {/* =================================================
-                      MATCH LIST
-                  ================================================= */}
-
-                  <Text
-                    size="sm"
-                    fw={600}
-                    mt="sm"
-                  >
-                    Matches
-                  </Text>
-
-                  <MatchSelector
-                    matches={filteredMatches}
-                    selectedMatch={selectedMatch}
-                    onMatchChange={setSelectedMatch}
-                  />
-
-                </Stack>
-
-              </Grid.Col>
+                    <DatePicker
+                      dates={dates}
+                      selectedDate={
+                        selectedDate
+                      }
+                      onDateChange={
+                        setSelectedDate
+                      }
+                    />
 
 
-              {/* =================================================
-                  RIGHT SIDE
-              ================================================= */}
+                    {/* =============================================
+                        MATCH LIST
+                    ============================================= */}
 
-              <Grid.Col
-                span={{
-                  base: 12,
-                  md: 9,
-                }}
-              >
-
-                <Stack gap="md">
-
-
-                  {/* =================================================
-                      MAP
-                  ================================================= */}
-
-                  <MapViewer
-                    match={selectedMatchData}
-                    currentTime={currentTime}
-                  />
+                    <Text
+                      size="sm"
+                      fw={600}
+                      mt="sm"
+                    >
+                      Matches
+                    </Text>
 
 
-                  {/* =================================================
-                      TIMELINE
-                  ================================================= */}
+                    <MatchSelector
+                      matches={
+                        filteredMatches
+                      }
 
-                  <Timeline
-                    match={selectedMatchData}
-                    currentTime={currentTime}
-                    onTimeChange={setCurrentTime}
-                    isPlaying={isPlaying}
-                    onPlayPause={() => setIsPlaying((prev) => !prev)}
-                    playbackSpeed={playbackSpeed}
-                    onPlaybackSpeedChange={setPlaybackSpeed}
-                  />
+                      selectedMatch={
+                        selectedMatch
+                      }
 
-                </Stack>
+                      onMatchChange={
+                        setSelectedMatch
+                      }
+                    />
 
-              </Grid.Col>
+                  </Stack>
 
-            </Grid>
+                </Grid.Col>
+
+
+                {/* =================================================
+                    RIGHT SIDE
+                ================================================= */}
+
+                <Grid.Col
+                  span={{
+                    base: 12,
+                    md: 9,
+                  }}
+                >
+
+                  <Stack gap="md">
+
+
+                    {/* =============================================
+                        MATCH MAP
+                    ============================================= */}
+
+                    <MapViewer
+                      match={
+                        selectedMatchData
+                      }
+
+                      currentTime={
+                        currentTime
+                      }
+                    />
+
+
+                    {/* =============================================
+                        TIMELINE
+                    ============================================= */}
+
+                    <Timeline
+                      match={
+                        selectedMatchData
+                      }
+
+                      currentTime={
+                        currentTime
+                      }
+
+                      onTimeChange={
+                        setCurrentTime
+                      }
+
+                      isPlaying={
+                        isPlaying
+                      }
+
+                      onPlayPause={() =>
+                        setIsPlaying(
+                          (previous) =>
+                            !previous
+                        )
+                      }
+
+                      playbackSpeed={
+                        playbackSpeed
+                      }
+
+                      onPlaybackSpeedChange={
+                        setPlaybackSpeed
+                      }
+
+                    />
+
+                  </Stack>
+
+                </Grid.Col>
+
+              </Grid>
+
+            )}
+
+
+            {/* ==================================================
+                HEATMAPS
+            ================================================== */}
+
+            {selectedTool === "heatmap" && (
+
+              <Stack gap="md">
+
+
+                {/* ===============================================
+                    HEATMAP VIEWER
+                =============================================== */}
+
+                <HeatmapViewer
+                  map={
+                    selectedMap
+                  }
+
+                  heatmapData={
+                    selectedMapHeatmap
+                  }
+
+                  selectedHeatmap={
+                    selectedHeatmap
+                  }
+
+                  onHeatmapChange={
+                    setSelectedHeatmap
+                  }
+
+                />
+
+              </Stack>
+
+            )}
 
           </Stack>
 
@@ -386,6 +785,7 @@ function App() {
     </AppShell>
 
   );
+
 }
 
 
