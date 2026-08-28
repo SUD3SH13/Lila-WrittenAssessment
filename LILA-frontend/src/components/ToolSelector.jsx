@@ -17,7 +17,7 @@ function ToolSelector({
                 </Tabs.Tab>
 
                 <Tabs.Tab value="heatmap">
-                    Heatmaps
+                    Heatmap Viewer
                 </Tabs.Tab>
 
             </Tabs.List>
