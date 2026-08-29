@@ -79,7 +79,7 @@ maps
     ├── deaths[]
     └── loot[]
 
-### Coordinate Mapping
+## Coordinate Mapping
 
 The data contains 3D world coordinates (x, y, z). Since the minimaps are top-down 2D images, only x and z are used for spatial visualization.
 
@@ -102,7 +102,7 @@ pixel_y = (1 - v) × 1024
 
 The processed JSON stores the resulting px and py values with each event so the frontend does not need to repeatedly perform the coordinate conversion.
 
-### Assumptions and Data Handling
+## Assumptions and Data Handling
 
 The dataset contains one known case where the same raw match ID appears in multiple date folders with duplicated records. To preserve the date-based organization required by the visualization, these are treated as separate frontend entries using date-scoped IDs:
 
