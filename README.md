@@ -1,3 +1,22 @@
+# LILA Player Journey
+
+Interactive visualization tool for exploring LILA BLACK player telemetry,
+match replays, and heatmaps.
+
+## 🚀 Live Demo
+
+**[Open the deployed application](https://sudesh-lila-written-assessment.vercel.app/)**
+
+## Features
+
+- Match replay
+- Player movement visualization
+- Event timeline
+- Kill, death, loot and traffic heatmaps
+- Heatmap grid visualization
+- Red/blue heatmap color modes
+- Map selection
+
 # Setup
 
 ## Prerequisites
