@@ -16,11 +16,12 @@ The project uses a small Python preprocessing pipeline to transform the raw Parq
 
 ## Data Flow
 
+```text
 Raw Parquet files
         |
         ▼
 Python preprocessing
-        │
+        |
         |-- Identify map
         |-- Identify date from parent folder
         |-- Group files by match
@@ -28,10 +29,10 @@ Python preprocessing
         |-- Sort events by timestamp
         |-- Calculate match-relative time
         |-- Convert world coordinates to minimap pixels
-        │
+        |
         ▼
 public/data/matches.json
-        │
+        |
         ▼
 React application
         |
@@ -54,9 +55,10 @@ React application
         |
         ▼
 Interactive Map Visualization
+```
 
 ### matches.json is organised as
-
+```text
 maps
  └── map
       └── dates
@@ -68,9 +70,11 @@ matches
       ├── metadata
       └── players[]
            └── events[]
+```
 
 ### heatmaps.json is organised as
 
+```text
 maps
 └── map
     ├── grid_size
@@ -78,6 +82,7 @@ maps
     ├── kills[]
     ├── deaths[]
     └── loot[]
+```
 
 ## Coordinate Mapping
 
@@ -85,10 +90,11 @@ The data contains 3D world coordinates (x, y, z). Since the minimaps are top-dow
 
 The preprocessing pipeline uses the following map-specific coordinate configurations:
 
-Map	            Scale	Origin X	Origin Z
-Ambrose Valley	900	    -370	    -473
-Grand Rift	    581	    -290	    -290
-Lockdown	    1000	-500	    -500
+| Map | Scale | Origin X | Origin Z |
+|---|---:|---:|---:|
+| Ambrose Valley | 900 | -370 | -473 |
+| Grand Rift | 581 | -290 | -290 |
+| Lockdown | 1000 | -500 | -500 |
 
 World coordinates are first normalized:
 u = (x - origin_x) / scale
@@ -113,3 +119,4 @@ For example, ac049b28-8116-4ff1-9e60-4be0537b8cc9.nakama-0 appears in both folde
 
 The frontend is componentized into independent pieces for map selection, date selection, match selection, map rendering, and timeline playback, making each part easier to maintain and modify.
 The application follows a static-first architecture. No backend or database is required at runtime. All raw data is preprocessed into JSON, which the React application loads directly from the public directory.
+
